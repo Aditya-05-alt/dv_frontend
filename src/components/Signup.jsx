@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 // import { auth } from "../firebase";  // Import the Firebase Authentication service
-import { auth } from "../firebase";  // Import the Firebase Authentication service
+import { auth } from "../../firebase";  // Import the Firebase Authentication service
 import { createUserWithEmailAndPassword } from "firebase/auth";  // Modular import for Firebase auth method
 import DVlogo from "../assets/DVlogo.png";
-import Loader from "../components/Loader";  // Import the Loader component
+import Loader from "../Loader";  // Import the Loader component
 
 export default function Signup() {
   const [loading, setLoading] = useState(false);

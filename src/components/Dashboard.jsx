@@ -1,42 +1,114 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { FaHome, FaChartLine, FaCogs, FaUsers, FaArrowLeft, FaArrowRight, FaDownload } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../auth/AuthProvider";
-import { db } from "../firebase";  // Import Firestore from firebase.js
-import { collection, getDocs } from "firebase/firestore"; // Firestore methods
+import { useAuth } from "../../auth/AuthProvider";
+import { db } from "../../firebase";  // Import Firestore from firebase.js
+import { collection, doc, getDocs } from "firebase/firestore"; // Firestore methods
 import DVlogo from "../assets/DVlogo.png";
 import man from "../assets/man.png";
-import Loader from "../components/Loader";  // Import your Loader component
+import Loader from "../Loader";  
+import { saveAs } from "file-saver"; // Import your Loader component
 
-const Dashboard = () => {
+const Dashboard_t = () => {
   const { user: authUser, logout } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [campaigns, setCampaigns] = useState([]);
+    // State to store campaigns for filter
+  const [insertionOrders, setInsertionOrders] = useState([]) 
   const [data, setData] = useState([]);  // State to store fetched data
   const [loading, setLoading] = useState(true);  // Loading state for fetching data
   const [error, setError] = useState(null);  // Error state for handling any issues with data fetching
   const [itemsPerPage, setItemsPerPage] = useState(5);  // Default items per page
   const [currentPage, setCurrentPage] = useState(1);  // Default page is 1
+  const [filter, setFilter] = useState("all");  // Filter state for selected campaign
   const navigate = useNavigate();
+  const [campaignToInsertionMap, setCampaignToInsertionMap] = useState({});
+  const [insertionFilter, setInsertionFilter] = useState("all");
 
-  // Fetch data from Firestore (only once on component mount)
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "DV360_data"));  // Replace "DV360_data" with your Firestore collection name
-        const campaignData = [];
-        querySnapshot.forEach((doc) => {
-          campaignData.push({ id: doc.id, ...doc.data() });
-        });
-        setData(campaignData);  // Set data
-      } catch (error) {
-        setError("Error fetching data: " + error.message);
-      } finally {
-        setLoading(false);  // Stop loading once data is fetched
-      }
-    };
-    fetchData();
-  }, []); // Empty dependency array ensures this runs only once
+  // Fetch campaigns and data from Firestore on component mount
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      // Fetch campaign data from "DV_360Full" collection
+      const campaignSnapshot = await getDocs(collection(db, "DV_360Full"));
+      const campaignData = [];
+      const campaignList = [];
+      const insertionOrderList = [];
+      const campaignToInsertionMap = {};
+
+
+      campaignSnapshot.forEach((doc) => {
+  const data = { id: doc.id, ...doc.data() };
+  campaignData.push(data);
+
+  const campaignName = data.campaign;
+  const insertionOrder = data.insertion_order;
+
+  if (campaignName) {
+    campaignList.push(campaignName);
+
+    if (!campaignToInsertionMap[campaignName]) {
+      campaignToInsertionMap[campaignName] = new Set();
+    }
+
+    if (insertionOrder) {
+      campaignToInsertionMap[campaignName].add(insertionOrder);
+    }
+  }
+
+  if (insertionOrder) {
+    insertionOrderList.push(insertionOrder);
+  }
+});
+setCampaignToInsertionMap(campaignToInsertionMap);
+
+      setData(campaignData);
+        // Set data for the table
+
+      // Count the occurrences of each campaign
+      const campaignCount = campaignList.reduce((acc, campaign) => {
+        acc[campaign] = (acc[campaign] || 0) + 1;
+        return acc;
+      }, {});
+
+      const insertionOrderCount = insertionOrderList.reduce((acc, insertionOrder) => {
+        acc[insertionOrder] = (acc[insertionOrder] || 0) + 1;
+        return acc;
+      }, {});
+
+      // Create a list of campaigns with count for the dropdown
+      const uniqueCampaigns = Object.keys(campaignCount).map(campaign => ({
+        name: campaign,
+        count: campaignCount[campaign]
+      }));
+
+      const uniqueInsertionOrders = Object.keys(insertionOrderCount).map(insertionOrder => ({
+        name: insertionOrder,
+        count: insertionOrderCount[insertionOrder],
+      }));
+      setInsertionOrders(uniqueInsertionOrders);
+      setCampaigns(uniqueCampaigns); // Set campaigns with count for dropdown
+    } catch (error) {
+      setError("Error fetching data: " + error.message);
+    } finally {
+      setLoading(false);  // Stop loading once data is fetched
+    }
+  };
+
+  fetchData();
+}, []);
+
+
+useEffect(() => {
+  setInsertionFilter("all");
+}, [filter]);// Empty dependency array ensures this runs only once
+
+  // Handle filter change
+  const handleFilterChange = (e) => {
+    const selectedFilter = e.target.value;
+    setFilter(selectedFilter);  // Update filter state
+  };
 
   // Handle change in items per page
   const handleItemsPerPageChange = (e) => {
@@ -57,12 +129,50 @@ const Dashboard = () => {
     }
   };
 
-  // Paginate data based on current page and items per page
+  // Filter data based on selected campaign
+  const filteredData = useMemo(() => {
+  let result = data;
+
+  if (filter !== "all") {
+    result = result.filter(item => item.campaign === filter);
+  }
+
+  if (insertionFilter !== "all") {
+    result = result.filter(item => item.insertion_order === insertionFilter);
+  }
+
+  return result;
+}, [filter, insertionFilter, data]);
+
+
+  // Paginate filtered data
   const paginatedData = useMemo(() => {
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    return data.slice(indexOfFirstItem, indexOfLastItem);
-  }, [currentPage, itemsPerPage, data]); // Re-run pagination when data, currentPage, or itemsPerPage changes
+    return filteredData.slice(indexOfFirstItem, indexOfLastItem);
+  }, [currentPage, itemsPerPage, filteredData]);
+
+  const downloadCSV = () => {
+    const headers = [
+      "Campaign", "Insertion Order", "Pacing %", "Start Date", "End Date",
+      "Segment", "Total Media Cost", "Impressions", "Complete Views", "Completion Rate", "Media Cost (eCPM)"
+    ];
+
+    const rows = paginatedData.map(item => [
+      item.campaign, item.insertion_order, item.budget_segment_pacing_percentage, 
+      formatDate(item.budget_segment_start_date), formatDate(item.budget_segment_end_date),
+      item.budget_segment_name, item.total_media_cost_usd, item.impressions,
+      item.complete_views_video, item.completion_rate_video, item.total_media_cost_ecpm_usd
+    ]);
+
+    let csvContent = headers.join(",") + "\n";
+    rows.forEach(row => {
+      csvContent += row.join(",") + "\n";
+    });
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    saveAs(blob, "campaign_data.csv");
+  };
 
   const handleLogout = () => {
     logout();  // Call logout from context
@@ -78,15 +188,40 @@ const Dashboard = () => {
     return "";  // If no date, return empty string
   };
 
-  const totalPages = Math.ceil(data.length / itemsPerPage);
+  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
 
   const grandTotal = {
-    totalMediaCost: data.reduce((acc, item) => acc + parseFloat(item.total_media_cost_usd || 0), 0),
-    totalImpressions: data.reduce((acc, item) => acc + parseInt(item.impressions || 0), 0),
-    totalCompleteViews: data.reduce((acc, item) => acc + parseInt(item.complete_views_video || 0), 0),
-    totalCompletionRate: data.reduce((acc, item) => acc + parseFloat(item.completion_rate_video || 0), 0),
-    totalECPM: data.reduce((acc, item) => acc + parseFloat(item.total_media_cost_ecpm_usd || 0), 0),
+    totalMediaCost: filteredData.reduce((acc, item) => acc + parseFloat(item.total_media_cost_usd || 0), 0),
+    totalImpressions: filteredData.reduce((acc, item) => acc + parseInt(item.impressions || 0), 0),
+    totalCompleteViews: filteredData.reduce((acc, item) => acc + parseInt(item.complete_views_video || 0), 0),
+    totalCompletionRate: filteredData.reduce((acc, item) => acc + parseFloat(item.completion_rate_video || 0), 0),
+    totalECPM: filteredData.reduce((acc, item) => acc + parseFloat(item.total_media_cost_ecpm_usd || 0), 0),
   };
+  const filteredInsertionOrders = useMemo(() => {
+  if (filter === "all") return insertionOrders;
+
+  const relevantSet = new Set(
+    data
+      .filter((item) => item.campaign === filter)
+      .map((item) => item.insertion_order)
+  );
+
+  return insertionOrders.filter((io) => relevantSet.has(io.name));
+}, [filter, insertionOrders, data]);
+
+const calculateDaysDiff = (startDate, endDate) => {
+  if (!startDate || !endDate) return "";
+
+  const start = new Date(startDate.seconds * 1000);
+  const end = new Date(endDate.seconds * 1000);
+
+  // Difference in milliseconds → convert to days
+  const diffTime = Math.abs(end - start);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  return diffDays;
+};
+
 
   return (
     <div className="flex min-h-screen bg-gray-100 flex-col">
@@ -143,68 +278,87 @@ const Dashboard = () => {
                 {sidebarOpen && <span>Home</span>}
               </Link>
             </li>
-            <li>
-              <Link to="#!" className="flex items-center space-x-4 py-2 hover:bg-blue-700 rounded-md">
-                <FaChartLine size={20} />
-                {sidebarOpen && <span>Reports (coming soon)</span>}
-              </Link>
-            </li>
-            <li>
-              <Link to="#!" className="flex items-center space-x-4 py-2 hover:bg-blue-700 rounded-md">
-                <FaCogs size={20} />
-                {sidebarOpen && <span>Settings (coming soon)</span>}
-              </Link>
-            </li>
-            <li>
-              <Link to="#!" className="flex items-center space-x-4 py-2 hover:bg-blue-700 rounded-md">
-                <FaUsers size={20} />
-                {sidebarOpen && <span>Analytics (coming soon)</span>}
-              </Link>
-            </li>
           </ul>
         </div>
 
         {/* Dashboard Content */}
         <div className="flex-1 p-8 overflow-auto">
-          <div className="flex justify-between items-center mb-4">
-          <h2 className="text-2xl font-semibold text-gray-700 flex">Campaign Data</h2>
-          
-          <div className="mb-4">
-            
-                <label htmlFor="items-per-page" className="text-sm text-gray-700">Items per page:</label>
+          <div className="items-center mb-4">
+            <div className="">
+            <h2 className="text-2xl font-semibold text-gray-700 flex">Campaign Data</h2>
+
+            {/* Filter Dropdown */}
+          <div className="mt-5 flex items-center space-x-2">
                 <select
-                  id="items-per-page"
-                  value={itemsPerPage}
-                  onChange={handleItemsPerPageChange}
-                  className="ml-2 p-2 border border-gray-300 rounded"
+                  id="filter"
+                  className="p-2 border border-gray-300 rounded w-1/2"
+                  value={filter}
+                  onChange={handleFilterChange}
                 >
-                  <option value={5} >5</option>
-                  <option value={10}>10</option>
-                  <option value={15}>15</option>
+                  <option value="all">All Campaigns</option>
+                  {campaigns.map((campaign, index) => (
+                    <option key={index} value={campaign.name}>
+                      {campaign.name} ({campaign.count})
+                    </option>
+                  ))}
                 </select>
-                <div className="ml-4 inline-block">
-                <button className="w-50 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            <FaDownload />
-          </button>
-          </div>
+
+                <select
+                id="insertion-filter"
+                className="p-2 border border-gray-300 rounded w-1/2"
+                value={insertionFilter}
+                onChange={(e) => setInsertionFilter(e.target.value)}
+              >
+                <option value="all">All Insertion Orders</option>
+                {filteredInsertionOrders.map((insertionOrder, index) => (
+                  <option key={index} value={insertionOrder.name}>
+                    {insertionOrder.name} ({insertionOrder.count})
+                  </option>
+                ))}
+              </select>
+
               </div>
+            
+            </div>
+
+            {/* Items per page */}
+            <div className="flex space-between mt-5">
+            <div className="mb-4">
+              <label htmlFor="items-per-page" className="text-sm text-gray-700">Items per page:</label>
+              <select
+                id="items-per-page"
+                value={itemsPerPage}
+                onChange={handleItemsPerPageChange}
+                className="ml-2 p-2 border border-gray-300 rounded"
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={15}>15</option>
+              </select>
+            </div>
+
+            {/* Download Button */}
+            <div className="ml-4 inline-block">
+              <button onClick={downloadCSV} className="w-50 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                <FaDownload />
+              </button>
+            </div>
+          </div>
           </div>
 
           {/* Loading state */}
           {loading ? (
             <div className="flex justify-center items-center h-64">
-              <Loader />  {/* Show the loader while fetching data */}
+              <Loader />
             </div>
           ) : error ? (
             <p className="text-red-600">{error}</p>
-            // {/* Show error if there's an issue fetching data */}
           ) : (
             <div className="overflow-x-auto shadow-md mt-4">
-
               <table className="min-w-full table-auto">
                 <thead>
                   <tr className="bg-gray-200">
-                    {["Campaign", "Insertion Order", "Pacing %", "Budget Seg. Start Date", " Budget Seg. End Date", "Budget Segment", "Total Media Cost", "Impressions", "Complete Views", "Completion Rate", "Media Cost (eCPM)"].map((header) => (
+                    {["Campaign", "Insertion Order", "Pacing %", "Budget Seg. Start Date", "Budget Seg. End Date", "Budget Segment Budget","Days Diff" ,"Total Media Cost", "Impressions", "Complete Views", "Completion Rate", "Media Cost (eCPM)"].map((header) => (
                       <th key={header} className="px-4 py-2 text-left text-sm font-medium text-gray-600">{header}</th>
                     ))}
                   </tr>
@@ -213,36 +367,42 @@ const Dashboard = () => {
                   {paginatedData.map((item) => (
                     <tr key={item.id} className="border-b hover:bg-gray-50">
                       <td className="px-4 py-2 text-sm text-gray-800">{item.campaign}</td>
-                      <td className="px-4 py-2 text-sm text-gray-800">{item.insertion_order}</td>
-                      <td className="px-4 py-2 text-sm text-gray-800">{item.budget_segment_pacing_percentage}</td>
-                      <td className="px-4 py-2 text-sm text-gray-800">{formatDate(item.budget_segment_start_date)}</td>
-                      <td className="px-4 py-2 text-sm text-gray-800">{formatDate(item.budget_segment_end_date)}</td>
-                      <td className="px-4 py-2 text-sm text-gray-800">{item.budget_segment_name}</td>
-                      <td className="px-4 py-2 text-sm text-gray-800">{item.total_media_cost_usd}</td>
+                      <td className="px-4 py-2 text-sm text-gray-800">
+                        <Link className="text-blue-700">{item.insertion_order}</Link>
+                        </td>
+                      <td className="px-4 py-2 text-sm text-gray-800">{parseFloat(item.budget_segment_pacing_percentage).toFixed(2)}</td>
+                      <td className="px-4 py-2 text-sm text-gray-800">{item.budget_segment_start_date}</td>
+                      <td className="px-4 py-2 text-sm text-gray-800">{item.budget_segment_end_date}</td>
+                      
+                      <td className="px-4 py-2 text-sm text-gray-800">{parseFloat(item.budget_segment_budget).toFixed(2)}</td>
+                      <td className="px-4 py-2 text-sm text-gray-800">{parseFloat(item.total_media_cost_usd).toFixed(3)}</td>
                       <td className="px-4 py-2 text-sm text-gray-800">{item.impressions}</td>
                       <td className="px-4 py-2 text-sm text-gray-800">{item.complete_views_video}</td>
-                      <td className="px-4 py-2 text-sm text-gray-800">{item.completion_rate_video}</td>
-                      <td className="px-4 py-2 text-sm text-gray-800">{item.total_media_cost_ecpm_usd}</td>
+                      <td className="px-4 py-2 text-sm text-gray-800">{parseFloat(item.completion_rate_video).toFixed(2)}</td>
+                      <td className="px-4 py-2 text-sm text-gray-800">{parseFloat(item.total_media_cost_ecpm_usd).toFixed(2)}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
+
               <div className="bg-gray-100 mt-4">
                 <table className="w-full table-auto">
                   <thead>
                     <tr className="bg-gray-200">
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">Grand Total</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-600" colSpan={6}>Grand Total</th>
                       <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">{grandTotal.totalMediaCost.toFixed(2)}</th>
                       <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">{grandTotal.totalImpressions}</th>
                       <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">{grandTotal.totalCompleteViews}</th>
-                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">{(grandTotal.totalCompletionRate / data.length).toFixed(2)}%</th>
+                      <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">{(grandTotal.totalCompletionRate / filteredData.length).toFixed(2)}%</th>
                       <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">{grandTotal.totalECPM.toFixed(2)}</th>
                     </tr>
                   </thead>
                 </table>
-              </div>  
+              </div>
             </div>
           )}
+
+          {/* Pagination */}
           <div className="flex justify-between mt-4">
             <button onClick={prevPage} className="px-4 py-2 bg-blue-600 text-white rounded">
               Previous
@@ -250,15 +410,18 @@ const Dashboard = () => {
             <span className="flex items-center text-sm text-gray-700">
               Page {currentPage} of {totalPages}
             </span>
-            <button onClick={nextPage} className="px-4 py-2 bg-blue-600 text-white rounded">
+            <button onClick={nextPage} disabled={currentPage === totalPages || totalPages === 1} className={`px-4 py-2 rounded transition-colors duration-200 ${
+    currentPage === totalPages || totalPages === 1
+      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+      : "bg-blue-600 text-white hover:bg-blue-700"
+  }`}>
               Next
             </button>
           </div>
         </div>
-
       </div>
     </div>
   );
 };
 
-export default Dashboard;
+export default Dashboard_t;

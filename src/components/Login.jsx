@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { auth } from "../firebase";  // Import Firebase Authentication
+import { auth } from "../../firebase";  // Import Firebase Authentication
 import { signInWithEmailAndPassword } from "firebase/auth";  // Firebase Authentication method
 import DVlogo from "../assets/DVlogo.png";
-import Loader from "../components/Loader";  // Import the Loader component
+import Loader from "../Loader";  // Import the Loader component
+
 
 export default function AuthPage() {
   const [email, setEmail] = useState("");
@@ -38,7 +39,7 @@ export default function AuthPage() {
         <img
           src={DVlogo}
           alt="Logo"
-          className="max-w-xs w-2/3"
+          // className="max-w-xs w-2/3"
         />
       </div>
 
@@ -61,7 +62,7 @@ export default function AuthPage() {
 
           {/* Show Loader if loading is true */}
           {loading ? (
-            <Loader />  // Show the loader while loading
+            <Loader  />  // Show the loader while loading
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>

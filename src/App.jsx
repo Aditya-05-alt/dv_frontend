@@ -1,9 +1,12 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AuthProvider, { useAuth } from "./auth/AuthProvider";
-import Login from "./components/Login";
-import Signup from "./components/Signup";
-import Dashboard from "./components/Dashboard";
+// import Login from "./components/test_pages/Login";
+// import Signup from "./components/test_pages/Signup";
+// import Dashboard from "./components/test_pages/Dashboard";
+import LoginPage from "./pages/loginpage";
+import SignupPage from "./pages/signuppage";
+import Dashboard_t from "./pages/Dashboard";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -16,11 +19,12 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/logout" element={<Login />} />
+          <Route path="/login" element={<LoginPage/>} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/dashboard" element={<Dashboard_t/>} />
+          {/* <Route path="/logout" element={<Login />} /> */}
           <Route path="*" element={<Navigate to="/login" />} />
+          {/* <Route path="/test" element={<Dashboard_t/>}/> */}
         </Routes>
       </BrowserRouter>
     </AuthProvider>
