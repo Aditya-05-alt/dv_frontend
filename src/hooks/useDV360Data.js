@@ -11,7 +11,7 @@ export default function useDV360Data(db) {
   useEffect(() => {
     async function fetchAll() {
       try {
-        const snap = await getDocs(collection(db, "DV_360Full"));
+        const snap = await getDocs(collection(db, "DV_360_OCT"));
         const rows = [];
         const campaignList = [];
         const insertionList = [];

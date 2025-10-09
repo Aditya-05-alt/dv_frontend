@@ -5,7 +5,7 @@ export default function DataTable({ rows }) {
   const headers = [
     "Campaign",
     "Insertion Order",
-    "Old Pacing %",
+    // "Old Pacing %",
     "New Pacing %",
     "Start Date",
     "End Date",
@@ -22,6 +22,7 @@ export default function DataTable({ rows }) {
   
 // Full PAcing Callculation Steps: 
   const today = new Date().toLocaleDateString("en-US");
+
   const calculateDaysDiff = (startDate, endDate) => {
   if (!startDate || !endDate) return 0; // return number not string
 
@@ -43,8 +44,7 @@ export default function DataTable({ rows }) {
 
 const PerdaySpent = (budget, startDate, endDate) => {
   const days = calculateDaysDiff(startDate, endDate);
-  
-  
+    
 
   const budgetNum = parseFloat(budget) || 0;
 
@@ -91,13 +91,10 @@ const daysPassed = (startDate) => {
               <td className="px-4 py-2 text-sm text-gray-800">
                 <Link className="text-blue-700">{item.insertion_order}</Link>
               </td>
-              <td className="px-4 py-2 text-sm text-gray-800">{toFixedOrDash(item.budget_segment_pacing_percentage, 2)}</td>
+              {/* <td className="px-4 py-2 text-sm text-gray-800">{toFixedOrDash(item.budget_segment_pacing_percentage, 2)}</td> */}
               <td className="px-4 py-2 text-sm text-gray-800">{((toFixedOrDash(item.total_media_cost_usd, 3)/(PerdaySpent(item.budget_segment_budget, item.budget_segment_start_date, item.budget_segment_end_date).toFixed(2)*daysPassed(item.budget_segment_start_date)).toFixed(2))*100).toFixed(3)}%</td>
               <td className="px-4 py-2 text-sm text-gray-800">{formatFsDate(item.budget_segment_start_date)}</td>
               <td className="px-4 py-2 text-sm text-gray-800">{formatFsDate(item.budget_segment_end_date)}</td>
-              {/* <td className="px-4 py-2 text-sm text-gray-800">{calculateDaysDiff(item.budget_segment_start_date,item.budget_segment_end_date)}</td> 
-              // #remove after use */}
-              {/* <td className="px-4 py-2 text-sm text-gray-800"> {PerdaySpent(item.budget_segment_budget, item.budget_segment_start_date, item.budget_segment_end_date).toFixed(2)}</td> // #remove after use */}
               <td className="px-4 py-2 text-sm text-gray-800">{toFixedOrDash(item.budget_segment_budget, 2)}</td>
               <td className="px-4 py-2 text-sm text-gray-800">{toFixedOrDash(item.total_media_cost_usd, 3)}</td>
               <td className="px-4 py-2 text-sm text-gray-800">{item.impressions ?? "-"}</td>
@@ -106,9 +103,6 @@ const daysPassed = (startDate) => {
               <td className="px-4 py-2 text-sm text-gray-800">{toFixedOrDash(item.total_media_cost_ecpm_usd, 2)}</td>
               <td className="px-4 py-2 text-sm text-gray-800">{today}</td> {/* // #remove after use */}
                 <td className="px-4 py-2 text-sm text-gray-800">{daysPassed(item.budget_segment_start_date)}</td> 
-                {/* Remove after use */}
-                {/* <td className="px-4 py-2 text-sm text-gray-800"> {(PerdaySpent(item.budget_segment_budget, item.budget_segment_start_date, item.budget_segment_end_date).toFixed(2)*daysPassed(item.budget_segment_start_date)).toFixed(2)}</td>
-                 */}
             </tr>
           ))}
         </tbody>

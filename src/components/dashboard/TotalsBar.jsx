@@ -4,6 +4,7 @@ export default function TotalsBar({ rows }) {
   const totals = useMemo(() => {
     if (!rows.length) {
       return {
+        totalBudget: 0,
         totalMediaCost: 0,
         totalImpressions: 0,
         totalCompleteViews: 0,
@@ -11,13 +12,15 @@ export default function TotalsBar({ rows }) {
         totalECPM: 0,
       };
     }
-    const tMedia = rows.reduce((a, r) => a + parseFloat(r.total_media_cost_usd || 0), 0);
+    const tBudget = rows.reduce((a, r) => a + parseFloat(r.budget_segment_budget || 0), 0);
+    // const tMedia = rows.reduce((a, r) => a + parseFloat(r.total_media_cost_usd || 0), 0);
     const tImp = rows.reduce((a, r) => a + parseInt(r.impressions || 0), 0);
     const tViews = rows.reduce((a, r) => a + parseInt(r.complete_views_video || 0), 0);
     const tCR = rows.reduce((a, r) => a + parseFloat(r.completion_rate_video || 0), 0);
     const tECPM = rows.reduce((a, r) => a + parseFloat(r.total_media_cost_ecpm_usd || 0), 0);
     return {
-      totalMediaCost: tMedia,
+      totalBudget: tBudget,
+      // totalMediaCost: tMedia,
       totalImpressions: tImp,
       totalCompleteViews: tViews,
       avgCompletionRate: tCR / rows.length,
@@ -31,7 +34,8 @@ export default function TotalsBar({ rows }) {
         <thead>
           <tr className="bg-gray-200">
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600" colSpan={6}>Grand Total</th>
-            <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">{totals.totalMediaCost.toFixed(2)}</th>
+            <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">{totals.totalBudget.toFixed(2)}</th>
+            {/* <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">{totals.totalMediaCost.toFixed(2)}</th> */}
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">{totals.totalImpressions}</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">{totals.totalCompleteViews}</th>
             <th className="px-4 py-2 text-left text-sm font-medium text-gray-600">{totals.avgCompletionRate.toFixed(2)}%</th>

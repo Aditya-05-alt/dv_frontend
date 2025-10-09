@@ -98,7 +98,7 @@ export default function Dashboard() {
         <Sidebar open={sidebarOpen} setOpen={setSidebarOpen} />
 
         <div className="flex-1 p-8 overflow-auto">
-          <h2 className="text-2xl font-semibold text-gray-700">Campaign Data</h2>
+          <h2 className="text-2xl font-semibold text-gray-700">Insertion Data</h2>
 
           <Filters
             campaigns={campaigns}

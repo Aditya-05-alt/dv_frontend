@@ -7,6 +7,8 @@ import AuthProvider, { useAuth } from "./auth/AuthProvider";
 import LoginPage from "./pages/loginpage";
 import SignupPage from "./pages/signuppage";
 import Dashboard_t from "./pages/Dashboard";
+import Dashboard_campaign from "./pages/Dashboard_campaign";
+import Campaign_details from "./pages/campaign_details";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -22,6 +24,23 @@ export default function App() {
           <Route path="/login" element={<LoginPage/>} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/dashboard" element={<Dashboard_t/>} />
+           <Route 
+      path="/dashboard_camp" 
+      element={
+        <PrivateRoute>
+          <Dashboard_campaign />
+        </PrivateRoute>
+      } 
+    />
+    <Route
+      path="/campaign_details/:campaignName"
+      element={
+        <PrivateRoute>
+          <Campaign_details />
+        </PrivateRoute>
+      }
+    />
+          {/* <Route path="/campaign_details/" element={<Campaign_details />} /> */}
           {/* <Route path="/logout" element={<Login />} /> */}
           <Route path="*" element={<Navigate to="/login" />} />
           {/* <Route path="/test" element={<Dashboard_t/>}/> */}
