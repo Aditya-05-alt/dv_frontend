@@ -8,21 +8,20 @@ import Loader from '../components/Loader';
 import useDV360Data from '../hooks/useDV360';
 import TopBar from '../components/dashboard/TopBar';
 import Sidebar from '../components/dashboard/Sidebar';
-import CampaignDetailsTable from '../components/dashboard/CampaignDetailsTable';
 import spinner from '../assets/spinner2.gif';
-
+import InsertionDetailsTable from '../components/dashboard/Insertion_details';
 
 export default function Campaign_details() {
   const { user: authUser, logout } = useAuth();
   const navigate = useNavigate();
   const { data, loading, error } = useDV360Data(db);
-  
 
   // ✅ Get the dynamic part of the URL (the campaign name)
-  const { campaignName } = useParams();
+  const { insertionName } = useParams();
   
   // ✅ Decode the campaign name back to its original format (e.g., with spaces)
-  const decodedCampaignName = useMemo(() => decodeURIComponent(campaignName), [campaignName]);
+  const decodedInsertionName = useMemo(() => decodeURIComponent(insertionName), [insertionName]);
+  const { insertionOrderName } = useParams(); 
 
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -33,10 +32,13 @@ export default function Campaign_details() {
   };
 
   // ✅ This logic now filters data based on the campaign name from the URL
-  const filteredData = useMemo(() => {
-    if (!data) return [];
-    return data.filter(item => item.campaign === decodedCampaignName);
-  }, [data, decodedCampaignName]);
+const insertionOrderData = useMemo(() => {
+    if (!data) return null;
+    // 1. Find the SINGLE Insertion Order object that matches the name from the URL
+    return data.find(item => item.insertion_order === decodedInsertionName);
+  }, [data, decodedInsertionName]);
+
+
 
   return (
     <div className="flex min-h-screen bg-gray-100 flex-col">
@@ -55,8 +57,8 @@ export default function Campaign_details() {
           
           <h2 className="text-2xl font-semibold text-gray-700 ">
             Insertion Orders for: 
-            <Link to="/dashboard_camp" className="ml-2  text-blue-600 hover:underline">
-            <span className="text-blue-700">{decodedCampaignName}</span>
+            <Link to="/dashboard" className="ml-2  text-blue-600 hover:underline">
+            <span className="text-blue-700">{decodedInsertionName}</span>
             </Link>
           </h2>
 
@@ -64,7 +66,7 @@ export default function Campaign_details() {
           {error && <p className="mt-4 text-center text-red-500">Error: {error.message}</p>}
           
           {/* ✅ The table receives the data filtered specifically for this campaign */}
-          {data && <CampaignDetailsTable rows={filteredData} />}
+          {insertionOrderData && <InsertionDetailsTable rows={insertionOrderData.lineItems} />}
         </div>
       </div>
     </div>

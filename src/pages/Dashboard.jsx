@@ -5,7 +5,7 @@ import { db } from "../firebase";
 import DVlogo from "../assets/DVlogo.png";
 import man from "../assets/man.png";
 import Loader from "../components/Loader";
-import useDV360Data from "../hooks/useDV360Data";
+import useDV360Data from "../hooks/useDV360";
 import TopBar from "../components/dashboard/TopBar";
 import Sidebar from "../components/dashboard/Sidebar";
 import Filters from "../components/dashboard/Filters";

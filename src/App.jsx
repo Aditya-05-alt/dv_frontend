@@ -9,6 +9,7 @@ import SignupPage from "./pages/signuppage";
 import Dashboard_t from "./pages/Dashboard";
 import Dashboard_campaign from "./pages/Dashboard_campaign";
 import Campaign_details from "./pages/campaign_details";
+import Insertion_details from "./pages/insertion_details";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -24,6 +25,7 @@ export default function App() {
           <Route path="/login" element={<LoginPage/>} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/dashboard" element={<Dashboard_t/>} />
+          {/* Dashboard Insertion level route */}
            <Route 
       path="/dashboard_camp" 
       element={
@@ -32,11 +34,29 @@ export default function App() {
         </PrivateRoute>
       } 
     />
+    {/* Campaign data details */}
     <Route
       path="/campaign_details/:campaignName"
       element={
         <PrivateRoute>
           <Campaign_details />
+        </PrivateRoute>
+      }
+    />
+    {/* Insertion data details */}
+    <Route
+      path="/insertion_details/:insertionName"
+      element={
+        <PrivateRoute>
+          <Insertion_details />
+        </PrivateRoute>
+      }
+    />
+    <Route
+      path=""
+      element={
+        <PrivateRoute>
+          <Insertion_details />
         </PrivateRoute>
       }
     />

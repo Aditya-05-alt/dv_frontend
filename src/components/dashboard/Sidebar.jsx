@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaHome, FaArrowLeft, FaArrowRight, FaChartArea } from "react-icons/fa";
+import { FaHome, FaArrowLeft, FaArrowRight, FaChartArea, FaFileExcel } from "react-icons/fa";
 
 export default function Sidebar({ open, setOpen }) {
   return (
@@ -18,6 +18,10 @@ export default function Sidebar({ open, setOpen }) {
           <Link to="/dashboard_camp" className="flex items-center space-x-4 py-2 hover:bg-blue-700 rounded-md">
             <FaChartArea size={20} />
             {open && <span>Campaign Report</span>}
+          </Link>
+          <Link to="" className="flex items-center space-x-4 py-2 hover:bg-blue-700 rounded-md">
+            <FaFileExcel size={20} />
+            {open && <span>Budget Sheet</span>}
           </Link>
         </li>
       </ul>
