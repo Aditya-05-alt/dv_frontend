@@ -10,6 +10,7 @@ import Dashboard_t from "./pages/Dashboard";
 import Dashboard_campaign from "./pages/Dashboard_campaign";
 import Campaign_details from "./pages/campaign_details";
 import Insertion_details from "./pages/insertion_details";
+import BudgetSheet from "./pages/budgetsheet";
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -53,10 +54,10 @@ export default function App() {
       }
     />
     <Route
-      path=""
+      path="/budgetsheet"
       element={
         <PrivateRoute>
-          <Insertion_details />
+          <BudgetSheet />
         </PrivateRoute>
       }
     />

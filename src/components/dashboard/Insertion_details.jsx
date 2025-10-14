@@ -8,6 +8,8 @@ export default function InsertionDetailsTable({ rows }) {
   const headers = [
     // "Insertion Order",
     "Line Item",
+    "Start Date",
+    "End Date",
     "Line Item ID",
     "Line Item Type",
     "Impression",
@@ -34,18 +36,26 @@ export default function InsertionDetailsTable({ rows }) {
                 {/* ✅ Use the field names from your 'Line_Item_data' collection */}
                 {/* <td className="px-4 py-2 text-sm text-gray-800 font-semibold">{lineItem.insertion_order ?? "-"}</td> */}
                 <td className="px-4 py-2 text-sm text-gray-800 font-semibold">{lineItem.Line_item_name ?? "-"}</td>
+                <td className="px-4 py-2 text-sm text-gray-800">{lineItem.Start_date ?? "-"}</td>
+                <td className="px-4 py-2 text-sm text-gray-800">{lineItem.End_date ?? "-"}</td>
                 <td className="px-4 py-2 text-sm text-gray-800">{lineItem.Line_item_id ?? "-"}</td>
                 <td className="px-4 py-2 text-sm text-gray-800">{lineItem.Line_item_type ?? "-"}</td>
                 <td className="px-4 py-2 text-sm text-gray-800">{lineItem.impressions ?? "-"}</td>
-                <td className="px-4 py-2 text-sm text-gray-800">{lineItem.completion_rate_video ?? "-"}</td>
+                <td className="px-4 py-2 text-sm text-gray-800">{((lineItem.completion_rate_video)*100).toFixed(0) + " %" ?? "-"}</td>
                 <td className="px-4 py-2 text-sm text-gray-800">{lineItem.complete_views_video ?? "-"}</td>
+                
                 <td className="px-4 py-2 text-sm text-gray-800">{lineItem.Line_item_status === "Active" ? (
                   <div className="flex items-center">
       <span className="h-2.5 w-2.5 bg-green-500 rounded-full mr-2"></span>
-      {/* <span>Active</span> */}
+      <span>Active</span>
     </div>
                 ):(
-                  lineItem.Line_item_status ?? "-"
+                  lineItem.Line_item_status === "Paused" ? ( <div className="flex items-center">
+      <span className="h-2.5 w-2.5 bg-red-500 rounded-full mr-2"></span>
+      <span>Paused</span>
+    </div>
+
+                  ) : (lineItem.Line_item_status ?? "-")
                 )}</td>
                 
               </tr>

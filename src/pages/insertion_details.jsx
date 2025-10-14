@@ -56,7 +56,7 @@ const insertionOrderData = useMemo(() => {
           {/* ✅ The heading is now dynamic */}
           
           <h2 className="text-2xl font-semibold text-gray-700 ">
-            Insertion Orders for: 
+            Line Items Orders for: 
             <Link to="/dashboard" className="ml-2  text-blue-600 hover:underline">
             <span className="text-blue-700">{decodedInsertionName}</span>
             </Link>

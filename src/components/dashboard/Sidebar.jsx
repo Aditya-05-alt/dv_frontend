@@ -19,7 +19,7 @@ export default function Sidebar({ open, setOpen }) {
             <FaChartArea size={20} />
             {open && <span>Campaign Report</span>}
           </Link>
-          <Link to="" className="flex items-center space-x-4 py-2 hover:bg-blue-700 rounded-md">
+          <Link to="/budgetsheet" className="flex items-center space-x-4 py-2 hover:bg-blue-700 rounded-md">
             <FaFileExcel size={20} />
             {open && <span>Budget Sheet</span>}
           </Link>
