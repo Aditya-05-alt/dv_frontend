@@ -1,9 +1,5 @@
 import React from 'react';
 
-// Unused imports can be removed for cleaner code
-// import { formatFsDate, toFixedOrDash } from '../../utils/formatters';
-// import { calculatePacing, daysPassed, calculateDaysDiff } from '../../utils/pacingCalculations';
-
 export default function InsertionDetailsTable({ rows }) {
   const headers = [
     // "Insertion Order",
@@ -41,7 +37,7 @@ export default function InsertionDetailsTable({ rows }) {
                 <td className="px-4 py-2 text-sm text-gray-800">{lineItem.Line_item_id ?? "-"}</td>
                 <td className="px-4 py-2 text-sm text-gray-800">{lineItem.Line_item_type ?? "-"}</td>
                 <td className="px-4 py-2 text-sm text-gray-800">{lineItem.impressions ?? "-"}</td>
-                <td className="px-4 py-2 text-sm text-gray-800">{((lineItem.completion_rate_video)*100).toFixed(0) + " %" ?? "-"}</td>
+                <td className="px-4 py-2 text-sm text-gray-800">{((lineItem.completion_rate_video)*100).toFixed(0) + " %"}</td>
                 <td className="px-4 py-2 text-sm text-gray-800">{lineItem.complete_views_video ?? "-"}</td>
                 
                 <td className="px-4 py-2 text-sm text-gray-800">{lineItem.Line_item_status === "Active" ? (

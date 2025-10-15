@@ -1,9 +1,6 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import AuthProvider, { useAuth } from "./auth/AuthProvider";
-// import Login from "./components/test_pages/Login";
-// import Signup from "./components/test_pages/Signup";
-// import Dashboard from "./components/test_pages/Dashboard";
 import LoginPage from "./pages/loginpage";
 import SignupPage from "./pages/signuppage";
 import Dashboard_t from "./pages/Dashboard";

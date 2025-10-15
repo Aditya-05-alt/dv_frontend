@@ -1,6 +1,6 @@
 import React from 'react';
 import { formatFsDate, toFixedOrDash } from '../../utils/formatters';
-import { calculatePacing, daysPassed, calculateDaysDiff } from '../../utils/pacingCalculations';
+import { calculatePacing, daysPassed } from '../../utils/pacingCalculations';
 import { Link } from 'react-router-dom';
 
 export default function CampaignDetailsTable({ rows }) {
