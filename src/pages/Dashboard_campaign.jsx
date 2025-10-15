@@ -10,7 +10,7 @@ import TopBar from "../components/dashboard/TopBar";
 import Sidebar from "../components/dashboard/Sidebar";
 import CampaignFilter from "../components/dashboard/camp_filter";
 import Pagination from "../components/dashboard/Pagination";
-import DataTable_camp from "../components/dashboard/data_campaign";
+import DataTable_camp from "../components/dashboard/data_campaign.jsx";
 import ItemsPerPage from "../components/dashboard/ItemsPerPage";
 import DownloadCsvButton from "../components/dashboard/DownloadCsvButton";
 import spinner from "../assets/spinner2.gif"
